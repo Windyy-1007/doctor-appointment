@@ -28,6 +28,7 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::check()) {
+            $_SESSION['flash_error'] = 'Please log in to continue.';
             header('Location: ' . BASE_URL . '/auth/login');
             exit;
         }

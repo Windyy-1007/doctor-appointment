@@ -81,8 +81,10 @@ class AppointmentModel extends Model
 
     public function getBookedSlotsForDoctorInRange(int $doctorId, string $startDateTime, string $endDateTime): array
     {
+        $appointments = $this->table('appointments');
+
         $stmt = $this->db->prepare(
-            'SELECT appointment_datetime FROM appointments WHERE doctor_id = :doctor_id AND appointment_datetime BETWEEN :start AND :end AND status != :cancelled'
+            "SELECT appointment_datetime FROM {$appointments} WHERE doctor_id = :doctor_id AND appointment_datetime BETWEEN :start AND :end AND status != :cancelled"
         );
         $stmt->execute([
             'doctor_id' => $doctorId,

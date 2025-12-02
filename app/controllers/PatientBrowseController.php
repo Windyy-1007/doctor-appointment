@@ -12,7 +12,6 @@ class PatientBrowseController extends Controller
 
     public function __construct()
     {
-        Auth::requireRole(['patient']);
         $this->specialtyModel = new SpecialtyModel();
         $this->officeModel = new OfficeModel();
         $this->doctorModel = new DoctorModel();
