@@ -108,4 +108,20 @@ class StaffModerationController extends Controller
         $_SESSION['staff_moderation_flash'] = $success ? 'Office deactivated.' : 'Unable to deactivate office.';
         $this->redirect('/staff/moderation/offices');
     }
+
+    // Convenience aliases for clean URLs
+    public function edit($id): void
+    {
+        $this->editOffice($id);
+    }
+
+    public function update($id): void
+    {
+        $this->updateOffice($id);
+    }
+
+    public function deactivate($id): void
+    {
+        $this->deactivateOffice($id);
+    }
 }

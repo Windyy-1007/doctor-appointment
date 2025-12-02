@@ -12,6 +12,11 @@ class AdminOfficeController extends Controller
         $this->officeModel = new OfficeModel();
     }
 
+    public function index(): void
+    {
+        $this->pending();
+    }
+
     public function pending(): void
     {
         $offices = $this->officeModel->getPendingOffices();

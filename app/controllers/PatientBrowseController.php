@@ -47,7 +47,7 @@ class PatientBrowseController extends Controller
 
     public function searchOffices(): void
     {
-        $searchTerm = trim($_GET['q'] ?? '');
+        $searchTerm = trim($_REQUEST['q'] ?? '');
         $offices = $this->officeModel->getApprovedBySearch($searchTerm ?: null);
 
         $this->render('patient/offices/index', [

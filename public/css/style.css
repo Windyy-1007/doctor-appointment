@@ -33,6 +33,31 @@ body {
     padding: 2rem;
 }
 
+.section-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.section-card th,
+.section-card td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+}
+
+.section-card tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.section-card td:last-child {
+    white-space: nowrap;
+}
+
 .hero-cta {
     background: var(--color-sky);
     border-radius: 1rem;
@@ -166,6 +191,68 @@ body {
     padding: 0.95rem 1rem;
     background: #fff;
     margin-bottom: 1rem;
+}
+.auth-box {
+    max-width: 600px;
+    margin: 2.5rem auto;
+    padding: 2rem;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 1.25rem;
+}
+
+.auth-box label {
+    display: block;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.auth-box input,
+.auth-box select,
+.auth-box textarea {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    padding: 0.65rem 0.85rem;
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    background: #fdfdfd;
+}
+
+.auth-box button {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.2rem;
+    border-radius: 0.85rem;
+    border: none;
+    background: var(--color-dark);
+    color: #fff;
+    font-weight: 600;
+}
+
+.hero-cta .btn {
+    margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .hero-cta .border {
+        padding: 1.25rem;
+    }
+
+    .hero-cta .btn {
+        width: 100%;
+    }
+
+    .section-card .row.g-2 > .col-md-6,
+    .section-card .row.g-2 > .col-md-4,
+    .section-card .row.g-2 > .col-md-2 {
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-card .btn {
+        width: 100%;
+    }
 }
 
 .form-errors {
