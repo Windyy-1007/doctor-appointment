@@ -1,35 +1,51 @@
-<?php $this->title = $mode === 'search' ? 'Search Offices' : 'Offices'; ?>
+<?php $this->title = 'Offices | MediBook'; ?>
 
-<section class="patient-section patient-offices">
-    <header class="patient-section__header">
-        <h2><?= $mode === 'search' ? 'Search offices' : 'Available offices' ?></h2>
-        <p>Use the search box to find an office by name or address.</p>
-        <form class="search-form" action="<?= BASE_URL ?>/patient/offices/search" method="get">
-            <input type="text" name="q" placeholder="Search offices" value="<?= htmlspecialchars($searchTerm) ?>">
-            <button type="submit">Search</button>
-        </form>
-    </header>
+<section class="section-card card-hover">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <?php if ($mode === 'specialty' && $specialty !== null): ?>
+                <p class="text-uppercase text-primary-dark mb-1">Specialty</p>
+                <h2 class="h4 mb-0">Offices offering <?= htmlspecialchars($specialty['name']) ?></h2>
+            <?php elseif ($mode === 'search' && $searchTerm !== ''): ?>
+                <p class="text-uppercase text-primary-dark mb-1">Search</p>
+                <h2 class="h4 mb-0">Results for “<?= htmlspecialchars($searchTerm) ?>”</h2>
+            <?php else: ?>
+                <p class="text-uppercase text-primary-dark mb-1">Offices</p>
+                <h2 class="h4 mb-0">Approved partners</h2>
+            <?php endif; ?>
+        </div>
+        <a class="text-decoration-none text-primary-dark" href="<?= BASE_URL ?>/patient/specialties">Back to specialties</a>
+    </div>
 
-    <?php if ($mode === 'search' && $searchTerm !== ''): ?>
-        <p class="search-hint">Search results for “<?= htmlspecialchars($searchTerm) ?>”.</p>
-    <?php elseif ($mode === 'specialty' && $specialty !== null): ?>
-        <p class="search-hint">Offices offering <?= htmlspecialchars($specialty['name']) ?>.</p>
-    <?php endif; ?>
+    <form class="row g-2 mb-4" action="<?= BASE_URL ?>/patient/offices/search" method="get">
+        <div class="col-md-8">
+            <input type="search" class="form-control" name="q" placeholder="Search offices (name or address)" value="<?= htmlspecialchars($searchTerm ?? '') ?>">
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary-custom w-100" type="submit">Search</button>
+        </div>
+    </form>
 
     <?php if (empty($offices)): ?>
-        <p>No offices match your criteria.</p>
+        <div class="alert alert-custom">No offices match your criteria.</div>
     <?php else: ?>
-        <div class="office-grid">
+        <div class="row g-3">
             <?php foreach ($offices as $office): ?>
-                <article class="office-card">
-                    <h3><?= htmlspecialchars($office['office_name']) ?></h3>
-                    <p><?= htmlspecialchars($office['address']) ?></p>
-                    <?php if (!empty($office['phone'])): ?>
-                        <p>Phone: <?= htmlspecialchars($office['phone']) ?></p>
-                    <?php endif; ?>
-                    <p><?= htmlspecialchars($office['description'] ?? 'No description available yet.') ?></p>
-                    <a class="btn" href="<?= BASE_URL ?>/patient/offices/show/<?= $office['id'] ?>">View profile</a>
-                </article>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card h-100 border-0 card-hover rounded-4">
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="h5 fw-semibold mb-2"><?= htmlspecialchars($office['office_name']) ?></h3>
+                            <?php if (!empty($office['address'])): ?>
+                                <p class="small text-muted mb-1"><?= htmlspecialchars($office['address']) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($office['phone'])): ?>
+                                <p class="small mb-2">Phone: <?= htmlspecialchars($office['phone']) ?></p>
+                            <?php endif; ?>
+                            <p class="small text-truncate mb-3"><?= htmlspecialchars($office['description'] ?? 'No description available yet.') ?></p>
+                            <a href="<?= BASE_URL ?>/patient/offices/show/<?= $office['id'] ?>" class="btn btn-outline-primary mt-auto">View profile</a>
+                        </div>
+                    </div>
+                </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
