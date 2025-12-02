@@ -203,3 +203,33 @@ body {
     display: flex;
     gap: 0.5rem;
 }
+
+.slot-toggle {
+    border-radius: 999px;
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.slot-toggle__icon {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.slot-toggle[aria-expanded="true"] .slot-toggle__icon {
+    transform: rotate(90deg);
+}
+
+.slot-list {
+    margin-top: 0.75rem;
+}
+
+.slot-list--collapsed {
+    display: none;
+}

@@ -54,49 +54,77 @@
             <?php foreach ($day['doctors'] as $doctor): ?>
                 <article class="office-schedule-card mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h4 class="h6 mb-0">Dr. <?= htmlspecialchars($doctor['name']) ?></h4>
-                        </div>
+                        <h4 class="h6 mb-0">Dr. <?= htmlspecialchars($doctor['name']) ?></h4>
+                        <?php if (count($doctor['slots']) > 4): ?>
+                            <button type="button" class="slot-toggle" aria-expanded="false" aria-label="Show slots">
+                                <span class="slot-toggle__icon">▶</span>
+                            </button>
+                        <?php endif; ?>
                     </div>
 
-                    <?php foreach ($doctor['slots'] as $slot): ?>
-                        <div class="slot-row slot-row--<?= htmlspecialchars($slot['status']) ?> mb-2">
-                            <div>
-                                <strong class="slot-row__time"><?= htmlspecialchars($slot['time']) ?></strong>
-                                <?php if (!empty($slot['slot_entry']['note'])): ?>
-                                    <p class="text-muted small mb-0"><?= htmlspecialchars($slot['slot_entry']['note']) ?></p>
-                                <?php endif; ?>
-                                <?php if (!empty($slot['appointment'])): ?>
-                                    <p class="text-muted small mb-0">Patient: <?= htmlspecialchars($slot['appointment']['patient_name'] ?? $slot['appointment']['patient_email'] ?? 'Patient') ?> · <?= htmlspecialchars($slot['appointment']['status']) ?></p>
-                                <?php endif; ?>
+                    <div class="slot-list <?= count($doctor['slots']) > 4 ? 'slot-list--collapsed' : '' ?>">
+                        <?php foreach ($doctor['slots'] as $slot): ?>
+                            <div class="slot-row slot-row--<?= htmlspecialchars($slot['status']) ?> mb-2">
+                                <div>
+                                    <strong class="slot-row__time"><?= htmlspecialchars($slot['time']) ?></strong>
+                                    <?php if (!empty($slot['slot_entry']['note'])): ?>
+                                        <p class="text-muted small mb-0"><?= htmlspecialchars($slot['slot_entry']['note']) ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($slot['appointment'])): ?>
+                                        <p class="text-muted small mb-0">Patient: <?= htmlspecialchars($slot['appointment']['patient_name'] ?? $slot['appointment']['patient_email'] ?? 'Patient') ?> · <?= htmlspecialchars($slot['appointment']['status']) ?></p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap slot-row__actions">
+                                    <?php if ($slot['status'] === 'booked'): ?>
+                                        <form method="post" action="<?= BASE_URL ?>/office/schedule/cancelAppointment">
+                                            <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
+                                            <button class="btn btn-sm btn-outline-warning" type="submit">Cancel</button>
+                                        </form>
+                                        <form method="post" action="<?= BASE_URL ?>/office/schedule/markAttendance">
+                                            <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
+                                            <button class="btn btn-sm btn-outline-success" type="submit">Mark attended</button>
+                                        </form>
+                                    <?php elseif ($slot['status'] === 'blocked'): ?>
+                                        <form method="post" action="<?= BASE_URL ?>/office/schedule/unblockSlot">
+                                            <input type="hidden" name="slot_id" value="<?= htmlspecialchars($slot['slot_entry']['id']) ?>">
+                                            <button class="btn btn-sm btn-outline-secondary" type="submit">Unblock</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="post" action="<?= BASE_URL ?>/office/schedule/blockSlot">
+                                            <input type="hidden" name="doctor_id" value="<?= htmlspecialchars($slot['doctor_id']) ?>">
+                                            <input type="hidden" name="slot_datetime" value="<?= htmlspecialchars($slot['datetime']) ?>">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">Block slot</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <div class="d-flex gap-2 flex-wrap slot-row__actions">
-                                <?php if ($slot['status'] === 'booked'): ?>
-                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/cancelAppointment">
-                                        <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
-                                        <button class="btn btn-sm btn-outline-warning" type="submit">Cancel</button>
-                                    </form>
-                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/markAttendance">
-                                        <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
-                                        <button class="btn btn-sm btn-outline-success" type="submit">Mark attended</button>
-                                    </form>
-                                <?php elseif ($slot['status'] === 'blocked'): ?>
-                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/unblockSlot">
-                                        <input type="hidden" name="slot_id" value="<?= htmlspecialchars($slot['slot_entry']['id']) ?>">
-                                        <button class="btn btn-sm btn-outline-secondary" type="submit">Unblock</button>
-                                    </form>
-                                <?php else: ?>
-                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/blockSlot">
-                                        <input type="hidden" name="doctor_id" value="<?= htmlspecialchars($slot['doctor_id']) ?>">
-                                        <input type="hidden" name="slot_datetime" value="<?= htmlspecialchars($slot['datetime']) ?>">
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Block slot</button>
-                                    </form>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 </article>
             <?php endforeach; ?>
         </section>
     <?php endforeach; ?>
 <?php endif; ?>
+
+    <script>
+        document.querySelectorAll('.slot-toggle').forEach(button => {
+            const list = button.closest('article')?.querySelector('.slot-list');
+            const icon = button.querySelector('.slot-toggle__icon');
+            if (!list || !icon) {
+                return;
+            }
+
+            const updateState = () => {
+                const collapsed = list.classList.contains('slot-list--collapsed');
+                button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                icon.textContent = collapsed ? '▶' : '▼';
+            };
+
+            updateState();
+
+            button.addEventListener('click', () => {
+                list.classList.toggle('slot-list--collapsed');
+                updateState();
+            });
+        });
+    </script>
