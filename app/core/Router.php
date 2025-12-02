@@ -1,18 +1,37 @@
 <?php
 
 // Simple router that maps URI segments to controllers and actions
+// Simple router that maps URI segments to controllers and actions
 class Router
 {
     protected string $controller = 'Home';
     protected string $action = 'index';
     protected array $params = [];
+    protected array $adminResourceMap = [
+        'users' => 'User',
+        'specialties' => 'Specialty',
+        'offices' => 'Office',
+        'dashboard' => 'Dashboard',
+    ];
 
     public function __construct(string $path)
     {
-        $segments = array_filter(explode('/', trim($path, '/')));
+        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
 
         if (!empty($segments)) {
-            $this->controller = ucfirst(array_shift($segments));
+            if ($segments[0] === 'admin') {
+                array_shift($segments);
+                if (!empty($segments)) {
+                    $key = $segments[0];
+                    $resource = $this->adminResourceMap[$key] ?? ucfirst($key);
+                    $this->controller = 'Admin' . $resource;
+                    array_shift($segments);
+                } else {
+                    $this->controller = 'Admin';
+                }
+            } else {
+                $this->controller = ucfirst(array_shift($segments));
+            }
         }
 
         if (!empty($segments)) {
