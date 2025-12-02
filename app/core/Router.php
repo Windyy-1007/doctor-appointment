@@ -22,6 +22,7 @@ class Router
         'doctors' => 'Doctor',
         'schedule' => 'Schedule',
         'appointments' => 'Appointment',
+        'dashboard' => 'Dashboard',
     ];
 
     public function __construct(string $path)
