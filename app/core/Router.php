@@ -45,6 +45,21 @@ class Router
                 if ($resource !== null) {
                     $base = $this->staffResourceMap[$resource] ?? ucfirst($resource);
                     $this->controller = 'Staff' . $base;
+                    // Special routing for staff moderation sub-resources (e.g. /staff/moderation/offices/...)
+                    if ($resource === 'moderation') {
+                        $sub = array_shift($segments);
+                        if ($sub === 'offices') {
+                            // Map to StaffModeration controller. Next segment is the action (edit, update, deactivate)
+                            $this->action = array_shift($segments) ?? 'offices';
+                            $this->params = $segments;
+                            return;
+                        } else {
+                            // No sub-resource provided: default to offices listing
+                            $this->action = 'offices';
+                            $this->params = $segments;
+                            return;
+                        }
+                    }
                 } else {
                     $this->controller = 'StaffReport';
                 }

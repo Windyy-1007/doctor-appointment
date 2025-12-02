@@ -34,12 +34,13 @@ class UserModel extends Model
     {
         $users = $this->table('users');
 
-        $stmt = $this->db->prepare("INSERT INTO {$users} (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)");
+        $stmt = $this->db->prepare("INSERT INTO {$users} (name, email, password_hash, role, is_active) VALUES (:name, :email, :password_hash, :role, :is_active)");
         $success = $stmt->execute([
             'name' => $name,
             'email' => $email,
             'password_hash' => $passwordHash,
             'role' => 'office',
+            'is_active' => 0,
         ]);
 
         if (!$success) {

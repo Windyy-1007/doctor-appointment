@@ -21,7 +21,9 @@ class PatientBookingController extends Controller
 
     public function __construct()
     {
-        Auth::requireRole(['patient']);
+        // Require login but allow non-patient users to view the page
+        // so we can show a friendly warning instead of a 403.
+        Auth::requireLogin();
         $this->appointmentModel = new AppointmentModel();
         $this->doctorModel = new DoctorModel();
         $this->officeModel = new OfficeModel();
@@ -42,17 +44,34 @@ class PatientBookingController extends Controller
         $window = $this->getBookingWindow();
         $days = $this->buildSlotMatrix($doctorId, $officeId, $window['start'], $window['end']);
 
+        // If there is a booking warning in session (set by confirm), consume it
+        $warning = $_SESSION['booking_warning'] ?? null;
+        unset($_SESSION['booking_warning']);
+
+        $notPatient = !Auth::roleIs('patient');
+
         $this->render('patient/booking/calendar', [
             'doctor' => $resources['doctor'],
             'office' => $resources['office'],
             'days' => $days,
             'error' => null,
+            'warning' => $warning,
+            'notPatient' => $notPatient,
             'selectedSlot' => null,
         ]);
     }
 
     public function confirm(): void
     {
+        // If the current user is not a patient, set a warning and redirect back
+        if (!Auth::roleIs('patient')) {
+            $_SESSION['booking_warning'] = 'You must have a patient account to book appointments.';
+            $doctorId = (int) ($_POST['doctor_id'] ?? 0);
+            $officeId = (int) ($_POST['office_id'] ?? 0);
+            $this->redirect('/patient/booking/calendar?doctor_id=' . $doctorId . '&office_id=' . $officeId);
+            return;
+        }
+
         $doctorId = (int) ($_POST['doctor_id'] ?? 0);
         $officeId = (int) ($_POST['office_id'] ?? 0);
         $slotDatetime = trim($_POST['slot_datetime'] ?? '');
@@ -67,7 +86,7 @@ class PatientBookingController extends Controller
         $validation = $this->validateSlot($slotDatetime, $doctorId, $officeId, $window['start'], $window['end']);
 
         if (!$validation['valid']) {
-            $days = $this->buildSlotMatrix($doctorId, $window['start'], $window['end']);
+            $days = $this->buildSlotMatrix($doctorId, $officeId, $window['start'], $window['end']);
             $this->render('patient/booking/calendar', [
                 'doctor' => $resources['doctor'],
                 'office' => $resources['office'],

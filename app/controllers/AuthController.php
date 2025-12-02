@@ -104,6 +104,11 @@ class AuthController extends Controller
 
             if ($user === null || !password_verify($password, $user['password_hash'])) {
                 $error = 'Invalid credentials.';
+            } else {
+                // Prevent login for inactive accounts
+                if (isset($user['is_active']) && (int) $user['is_active'] === 0) {
+                    $error = 'Your account is not active. Please wait for approval.';
+                }
             }
         }
 

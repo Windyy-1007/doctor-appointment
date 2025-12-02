@@ -14,6 +14,10 @@
         <div class="alert alert-danger alert-custom"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
+    <?php if (!empty($warning)): ?>
+        <div class="alert alert-warning alert-custom"><?= htmlspecialchars($warning) ?></div>
+    <?php endif; ?>
+
     <form method="post" action="<?= BASE_URL ?>/patient/booking/confirm">
         <input type="hidden" name="doctor_id" value="<?= $doctor['id'] ?>">
         <input type="hidden" name="office_id" value="<?= $office['id'] ?>">
@@ -31,12 +35,16 @@
                             <?php foreach ($day['slots'] as $slot): ?>
                                 <?php $isBooked = $slot['is_booked']; ?>
                                 <?php $slotLabel = htmlspecialchars($slot['time']); ?>
-                                <?php if ($isBooked): ?>
-                                    <button type="button" class="calendar-slot booked" disabled><?= $slotLabel ?></button>
-                                <?php else: ?>
-                                    <?php $selected = ($selectedSlot ?? '') === $slot['datetime']; ?>
-                                    <button type="button" class="calendar-slot available<?= $selected ? ' selected' : '' ?>" data-datetime="<?= $slot['datetime'] ?>" data-label="<?= $slot['label'] ?? $slot['time'] ?>"><?= $slotLabel ?></button>
-                                <?php endif; ?>
+                                    <?php if ($isBooked): ?>
+                                        <button type="button" class="calendar-slot booked" disabled><?= $slotLabel ?></button>
+                                    <?php else: ?>
+                                        <?php $selected = ($selectedSlot ?? '') === $slot['datetime']; ?>
+                                        <?php if (!empty($notPatient)): ?>
+                                            <button type="button" class="calendar-slot available" disabled><?= $slotLabel ?></button>
+                                        <?php else: ?>
+                                            <button type="button" class="calendar-slot available<?= $selected ? ' selected' : '' ?>" data-datetime="<?= $slot['datetime'] ?>" data-label="<?= $slot['label'] ?? $slot['time'] ?>"><?= $slotLabel ?></button>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -46,7 +54,11 @@
 
         <div class="mt-4">
             <div class="slot-selection-message alert alert-custom d-none" role="alert"></div>
-            <button type="submit" class="btn btn-primary-custom w-100">Confirm booking</button>
+            <?php if (!empty($notPatient)): ?>
+                <button type="button" class="btn btn-secondary w-100" disabled>You must have a patient account to book</button>
+            <?php else: ?>
+                <button type="submit" class="btn btn-primary-custom w-100">Confirm booking</button>
+            <?php endif; ?>
         </div>
     </form>
 </section>
