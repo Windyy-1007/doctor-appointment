@@ -4,9 +4,11 @@ class OfficeModel extends Model
 {
     public function createOfficeProfile(int $userId, array $data): int
     {
+        $offices = $this->table('offices');
+
         $stmt = $this->db->prepare(
-            'INSERT INTO offices (user_id, office_name, address, phone, website, description, status, created_at)
-            VALUES (:user_id, :office_name, :address, :phone, :website, :description, :status, :created_at)'
+            "INSERT INTO {$offices} (user_id, office_name, address, phone, website, description, status, created_at)
+            VALUES (:user_id, :office_name, :address, :phone, :website, :description, :status, :created_at)"
         );
 
         $stmt->execute([
@@ -25,7 +27,9 @@ class OfficeModel extends Model
 
     public function getByUserId(int $userId): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM offices WHERE user_id = :user_id LIMIT 1');
+        $offices = $this->table('offices');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$offices} WHERE user_id = :user_id LIMIT 1");
         $stmt->execute(['user_id' => $userId]);
         $office = $stmt->fetch();
 
@@ -34,8 +38,10 @@ class OfficeModel extends Model
 
     public function updateProfile(int $officeId, array $data): bool
     {
+        $offices = $this->table('offices');
+
         $stmt = $this->db->prepare(
-            'UPDATE offices SET office_name = :office_name, address = :address, phone = :phone, website = :website, description = :description WHERE id = :id'
+            "UPDATE {$offices} SET office_name = :office_name, address = :address, phone = :phone, website = :website, description = :description WHERE id = :id"
         );
         return $stmt->execute([
             'office_name' => $data['office_name'],
@@ -49,18 +55,23 @@ class OfficeModel extends Model
 
     public function updateLogo(int $officeId, string $logoPath): bool
     {
-        $stmt = $this->db->prepare('UPDATE offices SET logo = :logo WHERE id = :id');
+        $offices = $this->table('offices');
+
+        $stmt = $this->db->prepare("UPDATE {$offices} SET logo = :logo WHERE id = :id");
         return $stmt->execute(['logo' => $logoPath, 'id' => $officeId]);
     }
 
     public function getPendingOffices(): array
     {
+        $offices = $this->table('offices');
+        $users = $this->table('users');
+
         $stmt = $this->db->prepare(
-            'SELECT o.*, u.name AS owner_name, u.email AS owner_email
-            FROM offices o
-            JOIN users u ON u.id = o.user_id
+            "SELECT o.*, u.name AS owner_name, u.email AS owner_email
+            FROM {$offices} o
+            JOIN {$users} u ON u.id = o.user_id
             WHERE o.status = :status
-            ORDER BY o.created_at ASC'
+            ORDER BY o.created_at ASC"
         );
         $stmt->execute(['status' => 'pending']);
         return $stmt->fetchAll();
@@ -68,7 +79,9 @@ class OfficeModel extends Model
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM offices WHERE id = :id');
+        $offices = $this->table('offices');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$offices} WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $office = $stmt->fetch();
 
@@ -82,7 +95,9 @@ class OfficeModel extends Model
             return false;
         }
 
-        $stmt = $this->db->prepare('UPDATE offices SET status = :status WHERE id = :id');
+        $offices = $this->table('offices');
+
+        $stmt = $this->db->prepare("UPDATE {$offices} SET status = :status WHERE id = :id");
         return $stmt->execute([
             'status' => $status,
             'id' => $id,
@@ -91,10 +106,13 @@ class OfficeModel extends Model
 
     public function getAllWithOpenReportCount(): array
     {
+        $offices = $this->table('offices');
+        $reports = $this->table('reports');
+
         $stmt = $this->db->query(
             "SELECT o.*, COUNT(r.id) AS open_reports
-            FROM offices o
-            LEFT JOIN reports r ON r.target_type = 'office' AND r.target_id = o.id AND r.status IN ('open', 'in_progress')
+            FROM {$offices} o
+            LEFT JOIN {$reports} r ON r.target_type = 'office' AND r.target_id = o.id AND r.status IN ('open', 'in_progress')
             GROUP BY o.id
             ORDER BY o.created_at DESC"
         );
@@ -109,8 +127,10 @@ class OfficeModel extends Model
             return false;
         }
 
+        $offices = $this->table('offices');
+
         $stmt = $this->db->prepare(
-            'UPDATE offices SET office_name = :office_name, address = :address, phone = :phone, description = :description, status = :status WHERE id = :id'
+            "UPDATE {$offices} SET office_name = :office_name, address = :address, phone = :phone, description = :description, status = :status WHERE id = :id"
         );
 
         return $stmt->execute([
@@ -125,15 +145,20 @@ class OfficeModel extends Model
 
     public function countAll(): int
     {
-        $stmt = $this->db->query('SELECT COUNT(*) FROM offices');
+        $offices = $this->table('offices');
+
+        $stmt = $this->db->query("SELECT COUNT(*) FROM {$offices}");
         return (int) $stmt->fetchColumn();
     }
 
     public function getApprovedBySpecialty(int $specialtyId, ?string $searchTerm = null): array
     {
+        $offices = $this->table('offices');
+        $doctors = $this->table('doctors');
+
         $sql = "SELECT DISTINCT o.*
-            FROM offices o
-            JOIN doctors d ON d.office_id = o.id
+            FROM {$offices} o
+            JOIN {$doctors} d ON d.office_id = o.id
             WHERE o.status = 'approved' AND d.specialty_id = :specialty_id";
         $params = ['specialty_id' => $specialtyId];
 
@@ -151,8 +176,10 @@ class OfficeModel extends Model
 
     public function getApprovedBySearch(?string $searchTerm): array
     {
+        $offices = $this->table('offices');
+
         $sql = "SELECT o.*
-            FROM offices o
+            FROM {$offices} o
             WHERE o.status = 'approved'";
         $params = [];
 

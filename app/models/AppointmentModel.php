@@ -5,12 +5,14 @@ class AppointmentModel extends Model
     public function getAppointmentsCountPerWeek(int $weeks = 4): array
     {
         $limit = max(1, (int) $weeks);
+        $appointments = $this->table('appointments');
+
         $stmt = $this->db->prepare(
             "SELECT
                 DATE_FORMAT(DATE_SUB(appointment_datetime, INTERVAL WEEKDAY(appointment_datetime) DAY), '%Y-%m-%d') AS week_start,
                 DATE_FORMAT(DATE_ADD(DATE_SUB(appointment_datetime, INTERVAL WEEKDAY(appointment_datetime) DAY), INTERVAL 6 DAY), '%Y-%m-%d') AS week_end,
                 COUNT(*) AS total_appointments
-            FROM appointments
+            FROM {$appointments}
             WHERE appointment_datetime >= DATE_SUB(CURDATE(), INTERVAL :weeks WEEK)
             GROUP BY week_start
             ORDER BY week_start DESC
@@ -23,13 +25,17 @@ class AppointmentModel extends Model
 
     public function countAll(): int
     {
-        $stmt = $this->db->query('SELECT COUNT(*) FROM appointments');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->query("SELECT COUNT(*) FROM {$appointments}");
         return (int) $stmt->fetchColumn();
     }
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM appointments WHERE id = :id');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$appointments} WHERE id = :id");
         $stmt->execute(['id' => $id]);
 
         $appointment = $stmt->fetch();
@@ -38,7 +44,11 @@ class AppointmentModel extends Model
 
     public function getAppointmentsForOffice(int $officeId, ?string $status = null): array
     {
-        $sql = 'SELECT a.*, d.name AS doctor_name, u.name AS patient_name, u.email AS patient_email FROM appointments a JOIN doctors d ON d.id = a.doctor_id JOIN users u ON u.id = a.patient_id WHERE a.office_id = :office_id';
+        $appointments = $this->table('appointments');
+        $doctors = $this->table('doctors');
+        $users = $this->table('users');
+
+        $sql = "SELECT a.*, d.name AS doctor_name, u.name AS patient_name, u.email AS patient_email FROM {$appointments} a JOIN {$doctors} d ON d.id = a.doctor_id JOIN {$users} u ON u.id = a.patient_id WHERE a.office_id = :office_id";
         $params = ['office_id' => $officeId];
 
         if ($status !== null) {
@@ -54,14 +64,18 @@ class AppointmentModel extends Model
 
     public function getAppointmentsForOfficeInRange(int $officeId, string $startDate, string $endDate): array
     {
-        $stmt = $this->db->prepare('SELECT id, doctor_id, appointment_datetime FROM appointments WHERE office_id = :office_id AND appointment_datetime BETWEEN :start AND :end');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("SELECT id, doctor_id, appointment_datetime FROM {$appointments} WHERE office_id = :office_id AND appointment_datetime BETWEEN :start AND :end");
         $stmt->execute(['office_id' => $officeId, 'start' => $startDate, 'end' => $endDate]);
         return $stmt->fetchAll();
     }
 
     public function updateStatus(int $appointmentId, int $officeId, string $status): bool
     {
-        $stmt = $this->db->prepare('UPDATE appointments SET status = :status WHERE id = :id AND office_id = :office_id');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("UPDATE {$appointments} SET status = :status WHERE id = :id AND office_id = :office_id");
         return $stmt->execute(['status' => $status, 'id' => $appointmentId, 'office_id' => $officeId]);
     }
 
@@ -82,9 +96,11 @@ class AppointmentModel extends Model
 
     public function createAppointment(int $patientId, int $doctorId, int $officeId, string $datetime): int
     {
+        $appointments = $this->table('appointments');
+
         $stmt = $this->db->prepare(
-            'INSERT INTO appointments (patient_id, doctor_id, office_id, appointment_datetime, status, created_at)
-            VALUES (:patient_id, :doctor_id, :office_id, :appointment_datetime, :status, :created_at)'
+            "INSERT INTO {$appointments} (patient_id, doctor_id, office_id, appointment_datetime, status, created_at)
+            VALUES (:patient_id, :doctor_id, :office_id, :appointment_datetime, :status, :created_at)"
         );
 
         $status = 'confirmed'; // appointments are confirmed immediately; alternatively use 'pending' if review is needed
@@ -102,13 +118,17 @@ class AppointmentModel extends Model
 
     public function getAppointmentsForPatient(int $patientId): array
     {
+        $appointments = $this->table('appointments');
+        $doctors = $this->table('doctors');
+        $offices = $this->table('offices');
+
         $stmt = $this->db->prepare(
-            'SELECT a.*, d.name AS doctor_name, o.office_name, o.address
-            FROM appointments a
-            JOIN doctors d ON d.id = a.doctor_id
-            JOIN offices o ON o.id = a.office_id
+            "SELECT a.*, d.name AS doctor_name, o.office_name, o.address
+            FROM {$appointments} a
+            JOIN {$doctors} d ON d.id = a.doctor_id
+            JOIN {$offices} o ON o.id = a.office_id
             WHERE a.patient_id = :patient_id
-            ORDER BY a.appointment_datetime DESC'
+            ORDER BY a.appointment_datetime DESC"
         );
         $stmt->execute(['patient_id' => $patientId]);
         return $stmt->fetchAll();
@@ -116,7 +136,9 @@ class AppointmentModel extends Model
 
     public function findForPatient(int $appointmentId, int $patientId): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM appointments WHERE id = :id AND patient_id = :patient_id');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$appointments} WHERE id = :id AND patient_id = :patient_id");
         $stmt->execute(['id' => $appointmentId, 'patient_id' => $patientId]);
         $appointment = $stmt->fetch();
         return $appointment === false ? null : $appointment;
@@ -124,13 +146,17 @@ class AppointmentModel extends Model
 
     public function updateStatusForPatient(int $appointmentId, int $patientId, string $status): bool
     {
-        $stmt = $this->db->prepare('UPDATE appointments SET status = :status WHERE id = :id AND patient_id = :patient_id');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("UPDATE {$appointments} SET status = :status WHERE id = :id AND patient_id = :patient_id");
         return $stmt->execute(['status' => $status, 'id' => $appointmentId, 'patient_id' => $patientId]);
     }
 
     public function updateDatetimeForPatient(int $appointmentId, int $patientId, string $newDatetime): bool
     {
-        $stmt = $this->db->prepare('UPDATE appointments SET appointment_datetime = :datetime WHERE id = :id AND patient_id = :patient_id');
+        $appointments = $this->table('appointments');
+
+        $stmt = $this->db->prepare("UPDATE {$appointments} SET appointment_datetime = :datetime WHERE id = :id AND patient_id = :patient_id");
         return $stmt->execute(['datetime' => $newDatetime, 'id' => $appointmentId, 'patient_id' => $patientId]);
     }
 }

@@ -7,9 +7,11 @@ class ReportModel extends Model
 
     public function create(array $data): bool
     {
+        $reports = $this->table('reports');
+
         $stmt = $this->db->prepare(
-            'INSERT INTO reports (reporter_id, target_type, target_id, category, title, description, status, created_at) 
-            VALUES (:reporter_id, :target_type, :target_id, :category, :title, :description, :status, :created_at)'
+            "INSERT INTO {$reports} (reporter_id, target_type, target_id, category, title, description, status, created_at) 
+            VALUES (:reporter_id, :target_type, :target_id, :category, :title, :description, :status, :created_at)"
         );
 
         return $stmt->execute([
@@ -27,7 +29,9 @@ class ReportModel extends Model
     public function getOpenReports(): array
     {
         $placeholders = implode(',', array_fill(0, count($this->openStatuses), '?'));
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE status IN ({$placeholders}) ORDER BY created_at DESC");
+        $reports = $this->table('reports');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$reports} WHERE status IN ({$placeholders}) ORDER BY created_at DESC");
         $stmt->execute($this->openStatuses);
 
         return $stmt->fetchAll();
@@ -36,7 +40,9 @@ class ReportModel extends Model
     public function getResolvedReports(): array
     {
         $placeholders = implode(',', array_fill(0, count($this->resolvedStatuses), '?'));
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE status IN ({$placeholders}) ORDER BY resolved_at DESC");
+        $reports = $this->table('reports');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$reports} WHERE status IN ({$placeholders}) ORDER BY resolved_at DESC");
         $stmt->execute($this->resolvedStatuses);
 
         return $stmt->fetchAll();
@@ -44,7 +50,9 @@ class ReportModel extends Model
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM reports WHERE id = :id');
+        $reports = $this->table('reports');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$reports} WHERE id = :id");
         $stmt->execute(['id' => $id]);
 
         $report = $stmt->fetch();
@@ -59,7 +67,7 @@ class ReportModel extends Model
 
         if (in_array($status, $this->resolvedStatuses, true)) {
             $stmt = $this->db->prepare(
-                'UPDATE reports SET status = :status, resolved_by = :resolved_by, resolved_at = :resolved_at WHERE id = :id'
+                "UPDATE {$reports} SET status = :status, resolved_by = :resolved_by, resolved_at = :resolved_at WHERE id = :id"
             );
 
             return $stmt->execute([
@@ -70,7 +78,9 @@ class ReportModel extends Model
             ]);
         }
 
-        $stmt = $this->db->prepare('UPDATE reports SET status = :status, resolved_by = NULL, resolved_at = NULL WHERE id = :id');
+        $reports = $this->table('reports');
+
+        $stmt = $this->db->prepare("UPDATE {$reports} SET status = :status, resolved_by = NULL, resolved_at = NULL WHERE id = :id");
         return $stmt->execute(['status' => $status, 'id' => $id]);
     }
 }

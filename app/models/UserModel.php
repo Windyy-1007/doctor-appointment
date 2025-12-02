@@ -5,7 +5,9 @@ class UserModel extends Model
     // Find a user by email address
     public function findByEmail(string $email): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$users} WHERE email = :email");
         $stmt->execute(['email' => $email]);
 
         $user = $stmt->fetch();
@@ -16,7 +18,9 @@ class UserModel extends Model
     // Create a patient account with the provided data
     public function createPatient(string $name, string $email, string $passwordHash): bool
     {
-        $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("INSERT INTO {$users} (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)");
 
         return $stmt->execute([
             'name' => $name,
@@ -28,7 +32,9 @@ class UserModel extends Model
 
     public function createOfficeAccount(string $name, string $email, string $passwordHash): int
     {
-        $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("INSERT INTO {$users} (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)");
         $success = $stmt->execute([
             'name' => $name,
             'email' => $email,
@@ -46,7 +52,9 @@ class UserModel extends Model
     // Find user by primary key
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE id = :id');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("SELECT * FROM {$users} WHERE id = :id");
         $stmt->execute(['id' => $id]);
 
         $user = $stmt->fetch();
@@ -57,14 +65,18 @@ class UserModel extends Model
     // Retrieve every user with their active flag (assumes `is_active` TINYINT column exists)
     public function getAllUsers(): array
     {
-        $stmt = $this->db->query('SELECT id, name, email, role, created_at, IFNULL(is_active, 1) AS is_active FROM users ORDER BY created_at DESC');
+        $users = $this->table('users');
+
+        $stmt = $this->db->query("SELECT id, name, email, role, created_at, IFNULL(is_active, 1) AS is_active FROM {$users} ORDER BY created_at DESC");
         return $stmt->fetchAll();
     }
 
     // Update name/email/role/active state for an existing user
     public function updateUser(int $id, array $data): bool
     {
-        $stmt = $this->db->prepare('UPDATE users SET name = :name, email = :email, role = :role, is_active = :is_active WHERE id = :id');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("UPDATE {$users} SET name = :name, email = :email, role = :role, is_active = :is_active WHERE id = :id");
         return $stmt->execute([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -76,7 +88,9 @@ class UserModel extends Model
 
     private function setActive(int $id, bool $active): bool
     {
-        $stmt = $this->db->prepare('UPDATE users SET is_active = :active WHERE id = :id');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("UPDATE {$users} SET is_active = :active WHERE id = :id");
         return $stmt->execute([
             'active' => $active ? 1 : 0,
             'id' => $id,
@@ -95,14 +109,18 @@ class UserModel extends Model
 
     public function countByRole(string $role): int
     {
-        $stmt = $this->db->prepare('SELECT COUNT(*) FROM users WHERE role = :role');
+        $users = $this->table('users');
+
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$users} WHERE role = :role");
         $stmt->execute(['role' => $role]);
         return (int) $stmt->fetchColumn();
     }
 
     public function countAll(): int
     {
-        $stmt = $this->db->query('SELECT COUNT(*) FROM users');
+        $users = $this->table('users');
+
+        $stmt = $this->db->query("SELECT COUNT(*) FROM {$users}");
         return (int) $stmt->fetchColumn();
     }
 }

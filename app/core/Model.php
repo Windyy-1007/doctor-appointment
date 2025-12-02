@@ -9,4 +9,9 @@ class Model
     {
         $this->db = Database::getConnection();
     }
+
+    protected function table(string $table): string
+    {
+        return (defined('DB_TABLE_PREFIX') ? DB_TABLE_PREFIX : '') . $table;
+    }
 }
