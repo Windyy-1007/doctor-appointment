@@ -79,21 +79,27 @@ class AppointmentModel extends Model
         return $stmt->execute(['status' => $status, 'id' => $appointmentId, 'office_id' => $officeId]);
     }
 
-    public function getBookedSlotsForDoctorInRange(int $doctorId, string $startDateTime, string $endDateTime): array
+    public function getBookedSlotsForDoctorInRange(int $doctorId, int $officeId, string $startDateTime, string $endDateTime): array
     {
         $appointments = $this->table('appointments');
+        $officeSlots = $this->table('office_slots');
 
         $stmt = $this->db->prepare(
-            "SELECT appointment_datetime FROM {$appointments} WHERE doctor_id = :doctor_id AND appointment_datetime BETWEEN :start AND :end AND status != :cancelled"
+            "SELECT appointment_datetime AS datetime FROM {$appointments}
+            WHERE doctor_id = :doctor_id AND appointment_datetime BETWEEN :start AND :end AND status != :cancelled
+            UNION
+            SELECT slot_datetime AS datetime FROM {$officeSlots}
+            WHERE doctor_id = :doctor_id AND office_id = :office_id AND slot_datetime BETWEEN :start AND :end AND status = 'blocked'"
         );
         $stmt->execute([
             'doctor_id' => $doctorId,
             'start' => $startDateTime,
             'end' => $endDateTime,
+            'office_id' => $officeId,
             'cancelled' => 'cancelled',
         ]);
 
-        return array_column($stmt->fetchAll(), 'appointment_datetime');
+        return array_column($stmt->fetchAll(), 'datetime');
     }
 
     public function createAppointment(int $patientId, int $doctorId, int $officeId, string $datetime): int

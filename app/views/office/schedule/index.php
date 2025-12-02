@@ -1,41 +1,102 @@
-<?php $this->title = 'Schedule Overview'; ?>
+<?php $this->title = 'Schedule Overview | MediBook'; ?>
 
-<section class="section-card">
-    <header class="mb-4">
-        <h2 class="h4 mb-1">Schedule Overview</h2>
-        <p class="text-muted mb-0">Showing the next 14 days of availability for your doctors.</p>
-    </header>
-
-    <?php if (empty($days)): ?>
-        <div class="alert alert-custom">No schedule data available.</div>
-    <?php else: ?>
-        <div class="row g-3">
-            <?php foreach ($days as $date => $day): ?>
-                <div class="col-lg-6">
-                    <article class="office-schedule-card">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h3 class="h6 mb-0"><?= htmlspecialchars($day['label']) ?></h3>
-                            <span class="text-muted small"><?= htmlspecialchars($date) ?></span>
-                        </div>
-                        <?php foreach ($day['doctors'] as $doctor): ?>
-                            <div class="doctor-row">
-                                <p class="mb-1 fw-semibold"><?= htmlspecialchars($doctor['name']) ?></p>
-                                <div class="slot-grid">
-                                    <?php foreach ($doctor['slots'] as $slot): ?>
-                                        <?php $slotClass = $slot['status'] === 'booked' ? 'slot--booked' : 'slot--available'; ?>
-                                        <span class="slot-chip <?= $slotClass ?>" data-datetime="<?= $slot['datetime'] ?>">
-                                            <?= htmlspecialchars($slot['time']) ?>
-                                        </span>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <?php if (next($day['doctors']) !== false): ?>
-                                <hr class="my-3">
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </article>
-                </div>
-            <?php endforeach; ?>
+<section class="section-card mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2 class="h4 mb-1">Schedule Overview</h2>
+            <p class="text-muted mb-0">Manage working slots, cancel appointments, and mark attendance in one screen.</p>
         </div>
+        <span class="badge bg-dark text-white">Office View</span>
+    </div>
+
+    <?php if (!empty($flash)): ?>
+        <div class="form-success mb-3"><?= htmlspecialchars($flash, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
+
+    <form class="row g-3" method="post" action="<?= BASE_URL ?>/office/schedule/addSlot">
+        <div class="col-md-4">
+            <label class="form-label" for="slot_doctor">Doctor</label>
+            <select class="form-select" id="slot_doctor" name="doctor_id" required>
+                <option value="">Select doctor</option>
+                <?php foreach ($doctors as $doctor): ?>
+                    <option value="<?= htmlspecialchars($doctor['id'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($doctor['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="slot_datetime">Slot time</label>
+            <input class="form-control" type="datetime-local" id="slot_datetime" name="slot_datetime" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="slot_note">Note (optional)</label>
+            <input class="form-control" type="text" id="slot_note" name="note" placeholder="e.g. extra clinic hours">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+            <button class="btn btn-primary-custom w-100" type="submit">Add slot</button>
+        </div>
+    </form>
 </section>
+
+<?php if (empty($days)): ?>
+    <section class="section-card">
+        <p class="text-muted mb-0">No schedule data is available for the next two weeks.</p>
+    </section>
+<?php else: ?>
+    <?php foreach ($days as $day): ?>
+        <section class="section-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="h5 mb-0"><?= htmlspecialchars($day['label']) ?></h3>
+                    <p class="text-muted small mb-0">Slots for <?= htmlspecialchars($day['date'] ?? $day['label']) ?></p>
+                </div>
+            </div>
+
+            <?php foreach ($day['doctors'] as $doctor): ?>
+                <article class="office-schedule-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h4 class="h6 mb-0">Dr. <?= htmlspecialchars($doctor['name']) ?></h4>
+                        </div>
+                    </div>
+
+                    <?php foreach ($doctor['slots'] as $slot): ?>
+                        <div class="slot-row slot-row--<?= htmlspecialchars($slot['status']) ?> mb-2">
+                            <div>
+                                <strong class="slot-row__time"><?= htmlspecialchars($slot['time']) ?></strong>
+                                <?php if (!empty($slot['slot_entry']['note'])): ?>
+                                    <p class="text-muted small mb-0"><?= htmlspecialchars($slot['slot_entry']['note']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($slot['appointment'])): ?>
+                                    <p class="text-muted small mb-0">Patient: <?= htmlspecialchars($slot['appointment']['patient_name'] ?? $slot['appointment']['patient_email'] ?? 'Patient') ?> · <?= htmlspecialchars($slot['appointment']['status']) ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap slot-row__actions">
+                                <?php if ($slot['status'] === 'booked'): ?>
+                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/cancelAppointment">
+                                        <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
+                                        <button class="btn btn-sm btn-outline-warning" type="submit">Cancel</button>
+                                    </form>
+                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/markAttendance">
+                                        <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
+                                        <button class="btn btn-sm btn-outline-success" type="submit">Mark attended</button>
+                                    </form>
+                                <?php elseif ($slot['status'] === 'blocked'): ?>
+                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/unblockSlot">
+                                        <input type="hidden" name="slot_id" value="<?= htmlspecialchars($slot['slot_entry']['id']) ?>">
+                                        <button class="btn btn-sm btn-outline-secondary" type="submit">Unblock</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form method="post" action="<?= BASE_URL ?>/office/schedule/blockSlot">
+                                        <input type="hidden" name="doctor_id" value="<?= htmlspecialchars($slot['doctor_id']) ?>">
+                                        <input type="hidden" name="slot_datetime" value="<?= htmlspecialchars($slot['datetime']) ?>">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Block slot</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </article>
+            <?php endforeach; ?>
+        </section>
+    <?php endforeach; ?>
+<?php endif; ?>
