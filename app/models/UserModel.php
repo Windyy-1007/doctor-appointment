@@ -26,6 +26,23 @@ class UserModel extends Model
         ]);
     }
 
+    public function createOfficeAccount(string $name, string $email, string $passwordHash): int
+    {
+        $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)');
+        $success = $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'password_hash' => $passwordHash,
+            'role' => 'office',
+        ]);
+
+        if (!$success) {
+            return 0;
+        }
+
+        return (int) $this->db->lastInsertId();
+    }
+
     // Find user by primary key
     public function findById(int $id): ?array
     {

@@ -1,7 +1,6 @@
 <?php
 
 // Simple router that maps URI segments to controllers and actions
-// Simple router that maps URI segments to controllers and actions
 class Router
 {
     protected string $controller = 'Home';
@@ -13,24 +12,57 @@ class Router
         'offices' => 'Office',
         'dashboard' => 'Dashboard',
     ];
+    protected array $staffResourceMap = [
+        'reports' => 'Report',
+        'moderation' => 'Moderation',
+    ];
+    protected array $officeResourceMap = [
+        'register' => 'Auth',
+        'profile' => 'Profile',
+        'doctors' => 'Doctor',
+        'schedule' => 'Schedule',
+        'appointments' => 'Appointment',
+    ];
 
     public function __construct(string $path)
     {
         $segments = array_values(array_filter(explode('/', trim($path, '/'))));
 
         if (!empty($segments)) {
-            if ($segments[0] === 'admin') {
-                array_shift($segments);
-                if (!empty($segments)) {
-                    $key = $segments[0];
-                    $resource = $this->adminResourceMap[$key] ?? ucfirst($key);
-                    $this->controller = 'Admin' . $resource;
-                    array_shift($segments);
+            $section = array_shift($segments);
+
+            if ($section === 'admin') {
+                $resource = array_shift($segments);
+                if ($resource !== null) {
+                    $base = $this->adminResourceMap[$resource] ?? ucfirst($resource);
+                    $this->controller = 'Admin' . $base;
                 } else {
-                    $this->controller = 'Admin';
+                    $this->controller = 'AdminDashboard';
+                }
+            } elseif ($section === 'staff') {
+                $resource = array_shift($segments);
+                if ($resource !== null) {
+                    $base = $this->staffResourceMap[$resource] ?? ucfirst($resource);
+                    $this->controller = 'Staff' . $base;
+                } else {
+                    $this->controller = 'StaffReport';
+                }
+            } elseif ($section === 'office') {
+                $resource = array_shift($segments);
+                if ($resource !== null) {
+                    $base = $this->officeResourceMap[$resource] ?? ucfirst($resource);
+                    $this->controller = 'Office' . $base;
+                    if ($resource === 'register') {
+                        $this->action = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? 'register' : 'showRegisterForm';
+                        $segments = array_values($segments);
+                        $this->params = $segments;
+                        return;
+                    }
+                } else {
+                    $this->controller = 'Office';
                 }
             } else {
-                $this->controller = ucfirst(array_shift($segments));
+                $this->controller = ucfirst($section);
             }
         }
 
