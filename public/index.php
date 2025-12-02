@@ -1,10 +1,13 @@
 <?php
 
+session_start();
+
 // Bootstrap config and base classes used by the router and controllers
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/core/Database.php';
 require_once __DIR__ . '/../app/core/Controller.php';
 require_once __DIR__ . '/../app/core/Model.php';
+require_once __DIR__ . '/../app/core/Auth.php';
 require_once __DIR__ . '/../app/core/Router.php';
 
 // Determine the path requested by the client

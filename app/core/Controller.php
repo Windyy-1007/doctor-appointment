@@ -17,4 +17,11 @@ class Controller
 
         include __DIR__ . '/../views/layouts/main.php';
     }
+
+    // Redirect to a path relative to the BASE_URL constant
+    protected function redirect(string $path): void
+    {
+        header('Location: ' . BASE_URL . $path);
+        exit;
+    }
 }
