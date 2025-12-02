@@ -15,6 +15,15 @@
             <h1>Doctor Appointment Booking</h1>
             <nav>
                 <a href="<?= BASE_URL ?>">Home</a>
+                <?php if (Auth::check() && ($_SESSION['user_role'] ?? '') === 'patient'): ?>
+                    <a href="<?= BASE_URL ?>/patient/specialties">Specialties</a>
+                    <a href="<?= BASE_URL ?>/patient/appointments">My Appointments</a>
+                <?php endif; ?>
+                <?php if (Auth::check()): ?>
+                    <a href="<?= BASE_URL ?>/auth/logout">Logout</a>
+                <?php else: ?>
+                    <a href="<?= BASE_URL ?>/auth/login">Login</a>
+                <?php endif; ?>
             </nav>
         </div>
     </header>

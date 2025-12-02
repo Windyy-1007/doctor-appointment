@@ -61,6 +61,73 @@ class Router
                 } else {
                     $this->controller = 'Office';
                 }
+            } elseif ($section === 'patient') {
+                $resource = array_shift($segments);
+
+                if ($resource === null || $resource === 'specialties') {
+                    $this->controller = 'PatientBrowse';
+                    $this->action = 'specialties';
+                    $this->params = [];
+                    return;
+                }
+
+                if ($resource === 'offices') {
+                    $sub = array_shift($segments);
+                    if ($sub === 'specialty') {
+                        $this->controller = 'PatientBrowse';
+                        $this->action = 'officesBySpecialty';
+                        $this->params = [$segments[0] ?? null];
+                        return;
+                    }
+
+                    if ($sub === 'search') {
+                        $this->controller = 'PatientBrowse';
+                        $this->action = 'searchOffices';
+                        return;
+                    }
+
+                    if ($sub === 'show') {
+                        $this->controller = 'PatientBrowse';
+                        $this->action = 'showOffice';
+                        $this->params = [$segments[0] ?? null];
+                        return;
+                    }
+
+                    $this->controller = 'PatientBrowse';
+                    $this->action = 'specialties';
+                    return;
+                }
+
+                if ($resource === 'booking') {
+                    $this->controller = 'PatientBooking';
+                    $this->action = array_shift($segments) ?? 'calendar';
+                    $this->params = $segments;
+                    return;
+                }
+
+                if ($resource === 'appointments') {
+                    $this->controller = 'PatientAppointment';
+                    $sub = array_shift($segments);
+                    if ($sub === 'cancel') {
+                        $this->action = 'cancel';
+                        $this->params = [$segments[0] ?? null];
+                        return;
+                    }
+                    if ($sub === 'reschedule') {
+                        $this->action = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'reschedule' : 'showRescheduleForm';
+                        $this->params = [$segments[0] ?? null];
+                        return;
+                    }
+
+                    $this->action = 'index';
+                    $this->params = $segments;
+                    return;
+                }
+
+                $this->controller = 'PatientBrowse';
+                $this->action = 'specialties';
+                $this->params = [];
+                return;
             } else {
                 $this->controller = ucfirst($section);
             }

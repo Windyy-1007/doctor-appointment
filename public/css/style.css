@@ -179,3 +179,166 @@ body {
     background: #e3f6e4;
     color: #1c5a2e;
 }
+
+.patient-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 1100px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.patient-section__header h2 {
+    margin: 0 0 0.5rem;
+}
+
+.specialty-grid,
+.office-grid,
+.doctor-list__grid,
+.slot-calendar {
+    display: grid;
+    gap: 1rem;
+}
+
+.specialty-card,
+.office-card,
+.doctor-card {
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+}
+
+.specialty-card h3,
+.office-card h3,
+.doctor-card h4 {
+    margin-top: 0;
+}
+
+.doctor-card__specialty {
+    display: inline-block;
+    font-size: 0.85rem;
+    background: #e8f8ff;
+    color: #196d9b;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    margin-left: 0.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 4px;
+    border: none;
+    background: #1a3b6f;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn--link {
+    background: transparent;
+    color: #1a3b6f;
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert--error {
+    background: #ffe5e5;
+    color: #a00;
+}
+
+.alert--success {
+    background: #e3f6e4;
+    color: #1c5a2e;
+}
+
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.search-form input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.search-form button {
+    padding: 0.55rem 1rem;
+    border-radius: 4px;
+    border: none;
+    background: #1a3b6f;
+    color: #fff;
+    cursor: pointer;
+}
+
+.office-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.doctor-list__grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.booking-calendar .slot-calendar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.slot-calendar__day {
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fafbfc;
+}
+
+.slot-calendar__day header {
+    margin-bottom: 0.5rem;
+}
+
+.slot-calendar__day .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.35rem;
+}
+
+.slot-calendar .slot {
+    width: 100%;
+}
+
+.slot--selected {
+    background: #1a3b6f;
+    color: #fff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+table th,
+table td {
+    border: 1px solid #e1e4e8;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.muted {
+    color: #6c757d;
+}

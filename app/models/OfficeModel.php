@@ -128,4 +128,43 @@ class OfficeModel extends Model
         $stmt = $this->db->query('SELECT COUNT(*) FROM offices');
         return (int) $stmt->fetchColumn();
     }
+
+    public function getApprovedBySpecialty(int $specialtyId, ?string $searchTerm = null): array
+    {
+        $sql = "SELECT DISTINCT o.*
+            FROM offices o
+            JOIN doctors d ON d.office_id = o.id
+            WHERE o.status = 'approved' AND d.specialty_id = :specialty_id";
+        $params = ['specialty_id' => $specialtyId];
+
+        if (!empty($searchTerm)) {
+            $sql .= ' AND (o.office_name LIKE :term OR o.address LIKE :term OR o.description LIKE :term)';
+            $params['term'] = '%' . $searchTerm . '%';
+        }
+
+        $sql .= ' ORDER BY o.office_name ASC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function getApprovedBySearch(?string $searchTerm): array
+    {
+        $sql = "SELECT o.*
+            FROM offices o
+            WHERE o.status = 'approved'";
+        $params = [];
+
+        if (!empty($searchTerm)) {
+            $sql .= ' AND (o.office_name LIKE :term OR o.address LIKE :term OR o.description LIKE :term)';
+            $params['term'] = '%' . $searchTerm . '%';
+        }
+
+        $sql .= ' ORDER BY o.office_name ASC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }

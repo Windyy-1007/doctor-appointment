@@ -9,6 +9,13 @@ class DoctorModel extends Model
         return $stmt->fetchAll();
     }
 
+    public function getByOfficeAndSpecialty(int $officeId, int $specialtyId): array
+    {
+        $stmt = $this->db->prepare('SELECT d.*, s.name AS specialty_name FROM doctors d LEFT JOIN specialties s ON s.id = d.specialty_id WHERE d.office_id = :office_id AND d.specialty_id = :specialty_id ORDER BY d.name ASC');
+        $stmt->execute(['office_id' => $officeId, 'specialty_id' => $specialtyId]);
+        return $stmt->fetchAll();
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM doctors WHERE id = :id');
