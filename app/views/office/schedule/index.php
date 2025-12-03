@@ -64,7 +64,7 @@
 
                     <div class="slot-list <?= count($doctor['slots']) > 4 ? 'slot-list--collapsed' : '' ?>">
                         <?php foreach ($doctor['slots'] as $slot): ?>
-                            <div class="slot-row slot-row--<?= htmlspecialchars($slot['status']) ?> mb-2">
+                            <div class="slot-row slot-row--<?= htmlspecialchars($slot['status'] ?? 'available') ?> mb-2">
                                 <div>
                                     <strong class="slot-row__time"><?= htmlspecialchars($slot['time']) ?></strong>
                                     <?php if (!empty($slot['slot_entry']['note'])): ?>
@@ -75,7 +75,7 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="d-flex gap-2 flex-wrap slot-row__actions">
-                                    <?php if ($slot['status'] === 'booked'): ?>
+                                    <?php if (isset($slot['status']) && $slot['status'] === 'booked'): ?>
                                         <form method="post" action="<?= BASE_URL ?>/office/schedule/cancelAppointment">
                                             <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
                                             <button class="btn btn-sm btn-outline-warning" type="submit">Cancel</button>
@@ -84,7 +84,7 @@
                                             <input type="hidden" name="appointment_id" value="<?= htmlspecialchars($slot['appointment']['id']) ?>">
                                             <button class="btn btn-sm btn-outline-success" type="submit">Mark attended</button>
                                         </form>
-                                    <?php elseif ($slot['status'] === 'blocked'): ?>
+                                    <?php elseif (isset($slot['status']) && $slot['status'] === 'blocked'): ?>
                                         <form method="post" action="<?= BASE_URL ?>/office/schedule/unblockSlot">
                                             <input type="hidden" name="slot_id" value="<?= htmlspecialchars($slot['slot_entry']['id']) ?>">
                                             <button class="btn btn-sm btn-outline-secondary" type="submit">Unblock</button>

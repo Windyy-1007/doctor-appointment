@@ -1,44 +1,52 @@
 <?php $this->title = 'My Appointments | MediBook'; ?>
 
-<section class="section-card card-hover">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<section class="appointments-section">
+    <div class="appointments-header">
         <div>
-            <p class="text-uppercase text-primary-dark mb-1">Appointments</p>
-            <h2 class="h4 mb-0">My appointments</h2>
+            <p class="section-label">Your Schedule</p>
+            <h1>My Appointments</h1>
         </div>
-        <a href="<?= BASE_URL ?>/patient/specialties" class="text-decoration-none text-primary-dark">New booking</a>
+        <a href="<?= BASE_URL ?>/patient/specialties" class="btn btn-primary">+ New Booking</a>
     </div>
+
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="text-uppercase small text-muted">
+        <table class="appointments-table">
+            <thead>
                 <tr>
-                    <th>Date &amp; Time</th>
+                    <th>Date & Time</th>
                     <th>Doctor</th>
                     <th>Office</th>
                     <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($appointments)): ?>
                     <tr>
-                        <td colspan="5" class="text-center py-5">No appointments found.</td>
+                        <td colspan="5" class="empty-state">
+                            <p>No appointments found.</p>
+                            <a href="<?= BASE_URL ?>/patient/specialties" class="btn btn-primary btn-sm">Book Your First Appointment</a>
+                        </td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($appointments as $appointment): ?>
                         <?php $appointmentDate = new DateTime($appointment['appointment_datetime']); ?>
                         <?php $isFuture = $appointmentDate > new DateTime('now'); ?>
-                        <tr>
-                            <td><?= $appointmentDate->format('F j, Y \a\t H:i') ?></td>
-                            <td><?= htmlspecialchars($appointment['doctor_name']) ?></td>
-                            <td><?= htmlspecialchars($appointment['office_name']) ?></td>
-                            <td><?= htmlspecialchars(ucfirst($appointment['status'])) ?></td>
-                            <td class="text-end">
+                        <tr class="appointment-row appointment-row--<?= strtolower($appointment['status']) ?>">
+                            <td class="col-datetime"><?= $appointmentDate->format('M d, Y · H:i') ?></td>
+                            <td class="col-doctor">Dr. <?= htmlspecialchars($appointment['doctor_name']) ?></td>
+                            <td class="col-office"><?= htmlspecialchars($appointment['office_name']) ?></td>
+                            <td>
+                                <span class="status-badge status-<?= strtolower($appointment['status']) ?>">
+                                    <?= htmlspecialchars(ucfirst($appointment['status'])) ?>
+                                </span>
+                            </td>
+                            <td class="col-actions">
                                 <?php if ($isFuture && $appointment['status'] !== 'cancelled'): ?>
-                                    <a href="<?= BASE_URL ?>/patient/appointments/cancel/<?= $appointment['id'] ?>" class="btn btn-outline-danger btn-sm me-2" data-confirm="Cancel this appointment?"><span>Cancel</span></a>
-                                    <a href="<?= BASE_URL ?>/patient/appointments/reschedule/<?= $appointment['id'] ?>" class="btn btn-outline-primary btn-sm">Reschedule</a>
+                                    <a href="<?= BASE_URL ?>/patient/appointments/reschedule/<?= $appointment['id'] ?>" class="action-btn reschedule">Reschedule</a>
+                                    <a href="<?= BASE_URL ?>/patient/appointments/cancel/<?= $appointment['id'] ?>" class="action-btn cancel" onclick="return confirm('Cancel this appointment?')">Cancel</a>
                                 <?php else: ?>
-                                    <small class="text-muted">No actions</small>
+                                    <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
