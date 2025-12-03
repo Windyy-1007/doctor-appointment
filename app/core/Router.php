@@ -45,6 +45,21 @@ class Router
                 if ($resource !== null) {
                     $base = $this->staffResourceMap[$resource] ?? ucfirst($resource);
                     $this->controller = 'Staff' . $base;
+                    if ($resource === 'moderation') {
+                        $sub = array_shift($segments);
+                        if ($sub === 'offices') {
+                            $actionCandidate = array_shift($segments);
+                            $this->action = $actionCandidate ?? 'offices';
+                            $this->params = $segments;
+                            return;
+                        }
+
+                        if ($sub === null) {
+                            $this->action = 'offices';
+                            $this->params = [];
+                            return;
+                        }
+                    }
                 } else {
                     $this->controller = 'StaffReport';
                 }

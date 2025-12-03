@@ -30,10 +30,15 @@
                         <td><?= htmlspecialchars($office['status'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $office['open_reports'] ?></td>
                         <td>
-                            <a href="<?= BASE_URL ?>/staff/moderation/offices/edit/<?= $office['id'] ?>">Edit</a>
-                            <?php if ($office['status'] !== 'deactivated'): ?>
-                                | <a href="<?= BASE_URL ?>/staff/moderation/offices/deactivate/<?= $office['id'] ?>">Deactivate</a>
-                            <?php endif; ?>
+                            <div class="table-actions d-flex gap-2 flex-wrap">
+                                <a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>/staff/moderation/offices/edit/<?= $office['id'] ?>">Edit</a>
+                                <?php if ($office['status'] !== 'deactivated'): ?>
+                                    <a class="btn btn-sm btn-outline-danger" href="<?= BASE_URL ?>/staff/moderation/offices/deactivate/<?= $office['id'] ?>">Deactivate</a>
+                                <?php endif; ?>
+                                <?php if ($office['status'] !== 'approved'): ?>
+                                    <a class="btn btn-sm btn-outline-success" href="<?= BASE_URL ?>/staff/moderation/offices/activate/<?= $office['id'] ?>">Activate</a>
+                                <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -71,7 +71,7 @@
                                         <p class="text-muted small mb-0"><?= htmlspecialchars($slot['slot_entry']['note']) ?></p>
                                     <?php endif; ?>
                                     <?php if (!empty($slot['appointment'])): ?>
-                                        <p class="text-muted small mb-0">Patient: <?= htmlspecialchars($slot['appointment']['patient_name'] ?? $slot['appointment']['patient_email'] ?? 'Patient') ?> · <?= htmlspecialchars($slot['appointment']['status']) ?></p>
+                                        <p class="text-muted small mb-0">Patient: <?= htmlspecialchars($slot['appointment']['patient_name'] ?? $slot['appointment']['patient_email'] ?? 'Patient') ?> · <?= htmlspecialchars($slot['appointment']['status'] ?? 'scheduled') ?></p>
                                     <?php endif; ?>
                                 </div>
                                 <div class="d-flex gap-2 flex-wrap slot-row__actions">

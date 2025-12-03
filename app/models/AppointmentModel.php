@@ -65,8 +65,14 @@ class AppointmentModel extends Model
     public function getAppointmentsForOfficeInRange(int $officeId, string $startDate, string $endDate): array
     {
         $appointments = $this->table('appointments');
+        $users = $this->table('users');
 
-        $stmt = $this->db->prepare("SELECT id, doctor_id, appointment_datetime FROM {$appointments} WHERE office_id = :office_id AND appointment_datetime BETWEEN :start AND :end");
+        $stmt = $this->db->prepare(
+            "SELECT a.id, a.doctor_id, a.appointment_datetime, a.status, a.patient_id, u.name AS patient_name, u.email AS patient_email FROM {$appointments} a
+            JOIN {$users} u ON u.id = a.patient_id
+            WHERE a.office_id = :office_id AND a.appointment_datetime BETWEEN :start AND :end
+            ORDER BY a.appointment_datetime ASC"
+        );
         $stmt->execute(['office_id' => $officeId, 'start' => $startDate, 'end' => $endDate]);
         return $stmt->fetchAll();
     }

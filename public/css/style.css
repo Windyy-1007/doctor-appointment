@@ -64,6 +64,13 @@ body {
     padding: 2rem;
 }
 
+.table-actions .btn {
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+}
+
 .card-hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1404,6 +1411,7 @@ body {
 }
 
 @media (max-width: 768px) {
+
     .admin-dashboard-section,
     .office-dashboard-section,
     .appointments-section {

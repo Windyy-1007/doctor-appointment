@@ -124,4 +124,24 @@ class StaffModerationController extends Controller
     {
         $this->deactivateOffice($id);
     }
+
+    public function activateOffice($id): void
+    {
+        $officeId = (int) $id;
+        $success = $this->officeModel->setStatus($officeId, 'approved');
+        $user = Auth::user();
+        $staffId = $user['id'] ?? null;
+
+        if ($staffId !== null) {
+            $this->actionModel->logAction($staffId, 'activate_office', 'office', $officeId, 'Office re-activated by staff.');
+        }
+
+        $_SESSION['staff_moderation_flash'] = $success ? 'Office activated.' : 'Unable to activate office.';
+        $this->redirect('/staff/moderation/offices');
+    }
+
+    public function activate($id): void
+    {
+        $this->activateOffice($id);
+    }
 }
