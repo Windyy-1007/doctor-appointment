@@ -75,7 +75,7 @@ class PatientAppointmentController extends Controller
             return;
         }
         $window = $this->getBookingWindow();
-        $days = $this->buildSlotMatrix($doctor['id'], $window['start'], $window['end']);
+        $days = $this->buildSlotMatrix($doctor['id'], (int) $office['id'], $window['start'], $window['end']);
 
         $this->render('patient/appointments/reschedule', [
             'appointment' => $appointment,
@@ -100,7 +100,7 @@ class PatientAppointmentController extends Controller
         $doctorId = (int) $appointment['doctor_id'];
         $officeId = (int) $appointment['office_id'];
         $window = $this->getBookingWindow();
-        $validation = $this->validateSlot($slotDatetime, $doctorId, $window['start'], $window['end'], $appointment['appointment_datetime']);
+        $validation = $this->validateSlot($slotDatetime, $doctorId, $officeId, $window['start'], $window['end'], $appointment['appointment_datetime']);
 
         if (!$validation['valid']) {
             $doctor = $this->doctorModel->findById($doctorId);
@@ -109,7 +109,7 @@ class PatientAppointmentController extends Controller
                 $this->redirect('/patient/appointments');
                 return;
             }
-            $days = $this->buildSlotMatrix($doctorId, $window['start'], $window['end']);
+            $days = $this->buildSlotMatrix($doctorId, $officeId, $window['start'], $window['end']);
 
             $this->render('patient/appointments/reschedule', [
                 'appointment' => $appointment,
@@ -137,12 +137,13 @@ class PatientAppointmentController extends Controller
         return ['start' => $start, 'end' => $end];
     }
 
-    private function buildSlotMatrix(int $doctorId, DateTime $windowStart, DateTime $windowEnd): array
+    private function buildSlotMatrix(int $doctorId, int $officeId, DateTime $windowStart, DateTime $windowEnd): array
     {
         $days = [];
         $slotsPerDay = (int) (((self::WORK_DAY_END - self::WORK_DAY_START) * 60) / self::SLOT_DURATION_MINUTES);
         $bookedSlots = array_flip($this->appointmentModel->getBookedSlotsForDoctorInRange(
             $doctorId,
+            $officeId,
             $windowStart->format('Y-m-d H:i:s'),
             $windowEnd->format('Y-m-d H:i:s')
         ));
@@ -175,7 +176,7 @@ class PatientAppointmentController extends Controller
         return $days;
     }
 
-    private function validateSlot(string $slotDatetime, int $doctorId, DateTime $windowStart, DateTime $windowEnd, ?string $ignoreDatetime = null): array
+    private function validateSlot(string $slotDatetime, int $doctorId, int $officeId, DateTime $windowStart, DateTime $windowEnd, ?string $ignoreDatetime = null): array
     {
         if ($slotDatetime === '') {
             return ['valid' => false, 'message' => 'Please select a new slot.', 'slot' => null];
@@ -203,6 +204,7 @@ class PatientAppointmentController extends Controller
 
         $bookedSlots = $this->appointmentModel->getBookedSlotsForDoctorInRange(
             $doctorId,
+            $officeId,
             $windowStart->format('Y-m-d H:i:s'),
             $windowEnd->format('Y-m-d H:i:s')
         );
